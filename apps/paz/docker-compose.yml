@@ -1,0 +1,59 @@
+version: "3"
+services:
+  server:
+    build:
+      context: ./src
+    ports:
+      - 5202:8080
+    environment:
+      ASPNETCORE_HTTP_PORTS: 8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DbContext: Data Source=db,1433;Initial
+        Catalog=my-service-db;User
+        Id=sa;Password=SqlAdminChangeMe1234!;TrustServerCertificate=true;
+    restart: on-failure
+    profiles:
+      - complete
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  migrate:
+    build:
+      context: ./src
+    entrypoint: sh
+    command: -c './DbMigrationsBundle --connection "$${MIGRATION_CONNECTION}"'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MIGRATION_CONNECTION: Data Source=db,1433;Initial Catalog=my-service-db;User
+        Id=sa;Password=SqlAdminChangeMe1234!;TrustServerCertificate=true;
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    ports:
+      - 1433:1433
+    environment:
+      MSSQL_SA_PASSWORD: SqlAdminChangeMe1234!
+      ACCEPT_EULA: Y
+    healthcheck:
+      test:
+        - CMD
+        - /opt/mssql-tools/bin/sqlcmd
+        - -S
+        - localhost
+        - -U
+        - sa
+        - -P
+        - SqlAdminChangeMe1234!
+        - -Q
+        - SELECT 1
+        - -b
+        - -o
+        - /dev/null
+      timeout: 5s
+      interval: 10s
+      retries: 10
+      start_period: 10s
+volumes:
+  mssql: ~

@@ -1,0 +1,39 @@
+name: terraform
+
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  provisioning:
+    name: provisioning
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: setup terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: terraform init
+        working-directory: terraform
+        run: terraform init
+      
+      - name: terraform apply
+        id: apply
+        working-directory: terraform
+        run: terraform apply -auto-approve -no-color -input=false
