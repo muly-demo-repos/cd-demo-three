@@ -1,0 +1,58 @@
+{
+    "family": "paz",
+    "containerDefinitions": [
+        {
+            "name": "paz",
+            "image": "369232204790.dkr.ecr.us-east-1.amazonaws.com/paz:latest",
+            "essential": true,
+            "portMappings": [
+                {
+                    "name": "paz-5202-tcp",
+                    "containerPort": 5202,
+                    "hostPort": 5202,
+                    "protocol": "tcp"
+                }
+            ],
+            "secrets": [
+                {
+                    "name": "BCRYPT_SALT",
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:369232204790:secret:paz_secrets:BCRYPT_SALT::"
+                },
+                {
+                    "name": "JWT_EXPIRATION",
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:369232204790:secret:paz_secrets:JWT_EXPIRATION::"
+                },
+                {
+                    "name": "JWT_SECRET_KEY",
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:369232204790:secret:paz_secrets:JWT_SECRET_KEY::"
+                },
+                {
+                    "name": "DB_URL",
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:369232204790:secret:paz_secrets:DB_URL::"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/paz",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "mountPoints": [],
+            "volumesFrom": []
+        }
+    ],
+    "executionRoleArn": "arn:aws:iam::369232204790:role/custom_ecs_execution",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "2048",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
